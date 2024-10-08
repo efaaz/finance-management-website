@@ -5,6 +5,7 @@ import {
   HoverCardTrigger,
 } from "./components/ui/hover-card";
 import { ModeToggle } from "./components/ui/mode-toggle";
+import Spinner from "./components/ui/spinner";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         </HoverCardContent>
       </HoverCard>
       <ModeToggle></ModeToggle>
+      <Spinner></Spinner>
     </>
   );
 }
