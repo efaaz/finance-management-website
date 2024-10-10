@@ -1,10 +1,12 @@
 import authService from "@/appwrite/auth";
-import { login, logout } from "@/features/authSlice";
+import { SignIN, logout } from "@/features/authSlice";
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { Button } from "../button";
 
 function Navbar() {
+    const authStatus = useSelector((state) => state.auth.status)
   const dispatch = useDispatch();
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -13,7 +15,7 @@ function Navbar() {
     try {
       const user = await authService.getCurrentUser();
       if (user) {
-        dispatch(login({ userData: user }));
+        dispatch(SignIN({ userData: user }));
         setCurrentUser(user);
       } else {
         setCurrentUser(null);
@@ -37,7 +39,7 @@ function Navbar() {
   // Check user status on component mount
   useEffect(() => {
     checkUser();
-  }, []);
+  }, [authStatus]);
 
   return (
     <nav className="bg-gray-800 p-4 shadow-md">
@@ -73,12 +75,14 @@ function Navbar() {
               </button>
             </>
           ) : (
-            <Link
-              to="/login"
-              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md shadow"
-            >
-              Sign In
-            </Link>
+            <Button asChild>
+              <Link
+                to="/login"
+                // className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md shadow"
+              >
+                Sign In
+              </Link>
+            </Button>
           )}
         </div>
       </div>
