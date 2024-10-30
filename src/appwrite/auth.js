@@ -47,12 +47,11 @@ export class AuthService {
       return user;
     } catch (error) {
       if (error.code === 401) {
-        // If the error is 401, return null indicating no active session
-        console.log("No active session");
+        // Suppress 401 error log and return null
         return null;
-      } else if(error.code !== 401) {
-        console.log("Appwrite service :: getCurrentUser :: error", error.code);
-        throw error; // Rethrow any other errors
+      } else {
+        console.error("Appwrite service :: getCurrentUser :: unexpected error", error);
+        throw error; // Re-throw any other unexpected errors
       }
     }
   }
