@@ -3,7 +3,7 @@ import { SignIN, logout } from "@/features/authSlice";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { Button } from "../button";
+import { Button } from "../ui/button";
 
 function Navbar() {
     const authStatus = useSelector((state) => state.auth.status)

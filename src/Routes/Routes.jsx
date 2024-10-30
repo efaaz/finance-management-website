@@ -1,4 +1,5 @@
 import App from "@/App";
+import SpendingTable from "@/components/SpendingTable/SpendingTable";
 import LandingPage from "@/Layouts/LandingPage";
 import Error from "@/Pages/ErrorPage/Error";
 import Home from "@/Pages/Home/Home";
@@ -18,9 +19,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/login",
-        element: (
-            <SignIn />
-        ),
+        element: <SignIn />,
+      },
+      {
+        path: "/SpendingTable",
+        element: <SpendingTable />,
       },
     ],
   },

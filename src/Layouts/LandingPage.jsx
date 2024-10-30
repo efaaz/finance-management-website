@@ -1,5 +1,6 @@
 import authService from "@/appwrite/auth";
-import Navbar from "@/components/ui/Header/Navbar";
+import AppSidebar from "@/components/AppSidebar/AppSidebar";
+import Navbar from "@/components/Header/Navbar";
 import { logout, SignIN } from "@/features/authSlice";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -22,14 +23,17 @@ function LandingPage() {
       .finally(() => setLoading(false));
   }, []);
   return !loading ? (
-    <div className="min-h-screen flex flex-wrap content-between bg-gray-400">
-      <div className="w-full block">
-        <Navbar></Navbar>
-        <main>
+    <>
+      <Navbar />
+      <main className="flex">
+        <div className="">
+          <AppSidebar />
+        </div>
+        <div className="flex-grow w-full">
           <Outlet />
-        </main>
-      </div>
-    </div>
+        </div>
+      </main>
+    </>
   ) : null;
 }
 
