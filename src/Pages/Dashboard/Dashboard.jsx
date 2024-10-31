@@ -5,6 +5,8 @@ import { TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LineChart from "@/components/LineChart/LineCharts";
 import BreakDown from "@/components/ExpBreakDown/BreakDown";
+import AddRecordDialog from "@/components/AddRecordDialog/AddRecordDialog";
+import AddSpendingRecordDialog from "@/components/AddSpendingRecordDialog/AddSpendingRecordDialog";
 
 function Dashboard() {
   const today = new Date();
@@ -29,19 +31,26 @@ function Dashboard() {
           <p className="text-2xl font-semibold">$700</p>
         </div>
         <div className="sm:p-6 p-4 sm:m-0 mb-3 h-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-        <h5 className="mb-2 text-lg tracking-tight text-gray-900 dark:text-white">
+          <h5 className="mb-2 text-lg tracking-tight text-gray-900 dark:text-white">
             Today's Expense
           </h5>
           <p className="text-2xl font-semibold">$700</p>
         </div>
         <div className="sm:p-6 p-4 sm:m-0 mb-3 h-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-        <h5 className="mb-2 text-lg tracking-tight text-gray-900 dark:text-white">
+          <h5 className="mb-2 text-lg tracking-tight text-gray-900 dark:text-white">
             Today's Savings
           </h5>
           <p className="text-2xl font-semibold">$700</p>
         </div>
         <div className="sm:p-6 p-4 sm:m-0 mb-3 h-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-          4
+          <div className="flex gap-2">
+            <Button>
+            <AddRecordDialog date={formattedDate} />
+            </Button>
+            <Button>
+              <AddSpendingRecordDialog date={formattedDate} />
+            </Button>
+          </div>
         </div>
       </div>
       <div className="sm:grid mx-4 sm:grid-cols-4 grid-cols-1 grid-flow-row justify-between sm:gap-4 gap-1 items-center">

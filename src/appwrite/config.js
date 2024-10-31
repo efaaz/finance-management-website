@@ -1,25 +1,22 @@
 import conf from "../conf/conf.js";
 import { Client, ID, Databases, Storage, Query } from "appwrite";
-export class AppwriteService {
-  client = new Client();
-  databases;
-  bucket;
 
+class AppwriteService {
   constructor() {
-    this.client
+    this.client = new Client()
       .setEndpoint(conf.appwriteEndPoint)
       .setProject(conf.appwriteProjectId);
     this.databases = new Databases(this.client);
     this.bucket = new Storage(this.client);
   }
 
-  // Function to retrieve all spending records
-
-  async getAllSpendingRecords() {
+  // Function to retrieve all spending records for a user
+  async getAllSpendingRecords(userEmail) {
     try {
       const response = await this.databases.listDocuments(
         conf.appwriteDatabaseId,
-        conf.spendingRecordsCollectionId
+        conf.spendingRecordsCollectionId,
+        [Query.equal("user_id", userEmail)] // Fetch records for the authenticated user
       );
       return response.documents;
     } catch (error) {
@@ -27,11 +24,10 @@ export class AppwriteService {
       throw error;
     }
   }
-  
 
   // Function to create a daily record
   async createDailyRecord({
-    userId,
+    user_id,  // Ensure correct naming (user_id instead of user_Id)
     date,
     total_income,
     total_spending,
@@ -40,10 +36,10 @@ export class AppwriteService {
     try {
       const response = await this.databases.createDocument(
         conf.appwriteDatabaseId,
-        conf.dailyRecordsCollectionId, // Use the daily records collection ID
-        ID.unique(),
+        conf.dailyRecordsCollectionId,
+        ID.unique(), // Generate a unique ID for the document
         {
-          userId,
+          user_id, // Corrected to user_id
           date,
           total_income,
           total_spending,
@@ -57,14 +53,49 @@ export class AppwriteService {
     }
   }
 
+  // Function to update an existing daily record using the date
+  async updateDailyRecordByDate(userId, date, data) {
+    try {
+      // Fetch documents that match the user_id and date
+      const response = await this.databases.listDocuments(
+        conf.appwriteDatabaseId,
+        conf.dailyRecordsCollectionId,
+        [
+          Query.equal("user_id", userId),
+          Query.equal("date", date),
+        ]
+      );
+
+      // Check if any record was found
+      if (response.documents.length > 0) {
+        // Update the first matching document (you can change this logic as needed)
+        const recordId = response.documents[0].$id; // Get the ID of the first document found
+        const updatedResponse = await this.databases.updateDocument(
+          conf.appwriteDatabaseId,
+          conf.dailyRecordsCollectionId,
+          recordId, // Update the document with the found ID
+          data // The updated data object
+        );
+        return updatedResponse; // Return the updated document
+      } else {
+        throw new Error("No record found for the given date");
+      }
+    } catch (error) {
+      console.error("AppwriteService :: updateDailyRecordByDate :: error", error);
+      throw error; // Rethrow the error for handling in the thunk
+    }
+  }
+
   // Function to create a spending record and link it to a daily record
-  async createSpendingRecord({ daily_record_id, category, amount }) {
+  async createSpendingRecord({ date, daily_record_id, category, amount, user_id }) {
     try {
       const response = await this.databases.createDocument(
         conf.appwriteDatabaseId,
-        conf.spendingRecordsCollectionId, // Use the spending records collection ID
-        ID.unique(),
-        {
+        conf.spendingRecordsCollectionId,
+        ID.unique(), // Generate a unique ID for the document
+        { 
+          date,
+          user_id, // Ensure this is passed correctly
           daily_record_id, // This links to the corresponding daily record
           category,
           amount,
@@ -76,10 +107,8 @@ export class AppwriteService {
       throw error;
     }
   }
-
-  // You can add other methods for deleting or retrieving records if needed, similar to these ones
 }
 
-// appwrite/config.js
+// Instantiate AppwriteService
 const appwriteServiceInstance = new AppwriteService();
 export default appwriteServiceInstance;

@@ -10,10 +10,7 @@ import {
 } from "@/components/ui/table";
 import Heading from "../ui/Heading";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  createSpendingRecord,
-  fetchAllSpendingRecords,
-} from "@/features/spendingRecordsSlice";
+import { fetchAllSpendingRecords } from "@/features/spendingRecordsSlice";
 import { useEffect } from "react";
 
 function SpendingTable() {
@@ -29,8 +26,8 @@ function SpendingTable() {
   const handleCreateRecord = (spendingRecordData) => {
     dispatch(createSpendingRecord(spendingRecordData)); // Dispatch create record
   };
-   // Calculate the total amount
-   const totalAmount = records.reduce((sum, record) => sum + record.amount, 0);
+  // Calculate the total amount
+  const totalAmount = records.reduce((sum, record) => sum + record.amount, 0);
   return (
     <>
       <Heading text="Spendings" />

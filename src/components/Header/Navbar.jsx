@@ -14,6 +14,7 @@ function Navbar() {
   const checkUser = async () => {
     try {
       const user = await authService.getCurrentUser();
+
       if (user) {
         dispatch(SignIN({ userData: user }));
         setCurrentUser(user);
