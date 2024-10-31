@@ -7,9 +7,43 @@ import LineChart from "@/components/LineChart/LineCharts";
 import BreakDown from "@/components/ExpBreakDown/BreakDown";
 
 function Dashboard() {
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
   return (
     <>
-      <Heading text="Dashboard"></Heading>
+      <div className="flex justify-between items-center">
+        <Heading text="Dashboard"></Heading>
+        <h1 className="sm:text-xl text-xs mr-6 font-semibold">
+          Today's Date: {formattedDate}
+        </h1>
+      </div>
+      <div className="sm:grid my-4 mx-4 sm:grid-cols-4 grid-cols-1 grid-flow-row justify-between sm:gap-4 gap-1 items-center">
+        <div className="sm:p-6 p-4 sm:m-0 mb-3 h-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+          <h5 className="mb-2 text-lg tracking-tight text-gray-900 dark:text-white">
+            Today's Income
+          </h5>
+          <p className="text-2xl font-semibold">$700</p>
+        </div>
+        <div className="sm:p-6 p-4 sm:m-0 mb-3 h-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+        <h5 className="mb-2 text-lg tracking-tight text-gray-900 dark:text-white">
+            Today's Expense
+          </h5>
+          <p className="text-2xl font-semibold">$700</p>
+        </div>
+        <div className="sm:p-6 p-4 sm:m-0 mb-3 h-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+        <h5 className="mb-2 text-lg tracking-tight text-gray-900 dark:text-white">
+            Today's Savings
+          </h5>
+          <p className="text-2xl font-semibold">$700</p>
+        </div>
+        <div className="sm:p-6 p-4 sm:m-0 mb-3 h-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+          4
+        </div>
+      </div>
       <div className="sm:grid mx-4 sm:grid-cols-4 grid-cols-1 grid-flow-row justify-between sm:gap-4 gap-1 items-center">
         <div className="h-full sm:p-6 p-4 sm:m-0 mb-3 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
           <a href="#">
@@ -63,15 +97,14 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-6 grid-cols-1 sm:gap-4 gap-1 justify-center ">
-        <div className="col-span-4 my-4 ml-4">
-        <LineChart></LineChart>
+      <div className="grid sm:grid-cols-6 grid-cols-1 mx-3 sm:gap-4 gap-1 justify-center ">
+        <div className="col-span-4 my-4 ">
+          <LineChart></LineChart>
         </div>
-        <div className="col-span-2 my-4 mr-4">
-          <BreakDown/>
+        <div className="col-span-2 my-4 ">
+          <BreakDown />
         </div>
       </div>
-      
     </>
   );
 }
