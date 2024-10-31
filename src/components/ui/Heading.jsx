@@ -5,7 +5,7 @@ function Heading({ text}) {
  
 
 
-  return <h1 className="text-center my-5 font-bold text-4xl">{text}</h1>;
+  return <h1 className=" my-4 ml-4 font-semibold text-2xl">{text}</h1>;
 }
 
 Heading.propTypes = {

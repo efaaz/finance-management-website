@@ -43,7 +43,7 @@ function SpendingTable() {
             <TableRow>
               <TableHead className="w-[100px]">Invoice</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Method</TableHead>
+              <TableHead>Date</TableHead>
               <TableHead className="text-right">Amount</TableHead>
             </TableRow>
           </TableHeader>
@@ -52,7 +52,7 @@ function SpendingTable() {
               <TableRow key={record.id}>
                 <TableCell className="font-medium">{record.category}</TableCell>
                 <TableCell>{record.category}</TableCell>
-                <TableCell>{record.category}</TableCell>
+                <TableCell>{record.date}</TableCell>
                 <TableCell className="text-right">{record.amount}</TableCell>
               </TableRow>
             ))}

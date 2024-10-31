@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 
 function Navbar() {
-    const authStatus = useSelector((state) => state.auth.status)
+  const authStatus = useSelector((state) => state.auth.status);
   const dispatch = useDispatch();
   const [currentUser, setCurrentUser] = useState(null);
 

@@ -2,7 +2,7 @@ import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
 
 // Menu items.
 const items = [
-  { title: "Home", url: "#", icon: Home },
+  { title: "Dashboard", url: "/", icon: Home },
   { title: "Spendings", url: "SpendingTable", icon: Inbox },
   { title: "Calendar", url: "#", icon: Calendar },
   { title: "Search", url: "#", icon: Search },
@@ -23,7 +23,7 @@ const SidebarMenuButton = ({ asChild, children }) => (
 
 const AppSidebar = () => {
   return (
-    <div className=" flex flex-col bg-blue-950 w-12 hover:w-36 md:w-36 h-full transition-all duration-300 border-none sidebar">
+    <div className="flex flex-col bg-gray-800 w-12 hover:w-44 md:w-12 h-screen transition-all duration-300 border border-gray-700 sidebar">
       <div className="overflow-y-auto overflow-x-hidden flex flex-col justify-between flex-grow">
         <ul className="flex flex-col py-4 space-y-1">
           {items.map((item) => (
@@ -39,9 +39,6 @@ const AppSidebar = () => {
             </SidebarMenuItem>
           ))}
         </ul>
-        <p className="mb-14 px-5 py-3 hidden md:block text-center text-xs">
-          Copyright @2021
-        </p>
       </div>
     </div>
   );
