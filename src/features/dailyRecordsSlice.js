@@ -2,44 +2,77 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AppwriteService from "@/appwrite/config";
 import authService from "@/appwrite/auth";
 
-// Thunk to create or update a daily record
-export const createOrUpdateDailyRecord = createAsyncThunk(
-  "dailyRecords/createOrUpdateDailyRecord",
-  async ({ date, income = 0, spending = 0 }, { getState }) => {
+// Helper function to get today's date in MM/DD/YYYY format
+const getTodayDate = () => {
+  const today = new Date();
+  const month = today.getMonth() + 1; // Months are zero-indexed
+  const day = today.getDate();
+  const year = today.getFullYear();
+  return `${month}/${day}/${year}`; // MM/DD/YYYY format
+};
+
+// Thunk to fetch today's records
+const fetchDailyRecord = createAsyncThunk(
+  "dailyRecords/fetchAll",
+  async () => {
     const user = await authService.getCurrentUser();
     const userEmail = user?.email;
 
     if (!userEmail) throw new Error("User not authenticated");
 
-    const dailyRecordData = {
-      user_id: userEmail,
-      date,
-      total_income: income,
-      total_spending: spending,
-      net_income: income - spending,
-    };
+    // Fetch records for today's date
+    const records = await AppwriteService.getDailyRecord(userEmail);
 
-    const existingRecord = getState().dailyRecords.records.find(
-      (record) => record.date === date && record.user_id === userEmail
-    );
+    return records;
+  }
+);
 
-    if (existingRecord) {
-      const updatedData = {
-        total_income: existingRecord.total_income + income,
-        total_spending: existingRecord.total_spending + spending,
-        net_income:
-          existingRecord.total_income + income - (existingRecord.total_spending + spending),
+// Thunk to create or update a daily record
+export const createOrUpdateDailyRecord = createAsyncThunk(
+  "dailyRecords/createOrUpdateDailyRecord",
+  async ({ income = 0, spending = 0 }, { getState, rejectWithValue }) => {
+    try {
+      const user = await authService.getCurrentUser();
+      const userEmail = user?.email;
+
+      if (!userEmail) throw new Error("User not authenticated");
+
+      const todayDate = getTodayDate(); // Get today's date in MM/DD/YYYY format
+      const dailyRecordData = {
+        user_id: userEmail,
+        date: todayDate,
+        total_income: income,
+        total_spending: spending,
+        net_income: income - spending,
       };
 
-      const updatedRecord = await AppwriteService.updateDailyRecordByDate(
-        userEmail,
-        date,
-        updatedData
+      // Fetch today's record from the state
+      const existingRecord = getState().dailyRecords.records.find(
+        (record) => record.date === todayDate && record.user_id === userEmail
       );
-      return { ...updatedRecord, updatedData }; // Return updated data alongside response
-    } else {
-      const newRecord = await AppwriteService.createDailyRecord(dailyRecordData);
-      return { ...newRecord, updatedData: dailyRecordData };
+
+      if (existingRecord) {
+        // Update the existing record
+        const updatedData = {
+          total_income: existingRecord.total_income + income,
+          total_spending: existingRecord.total_spending + spending,
+          net_income:
+            existingRecord.total_income + income - (existingRecord.total_spending + spending),
+        };
+
+        const updatedRecord = await AppwriteService.updateDailyRecordByDate(
+          userEmail,
+          todayDate,
+          updatedData
+        );
+        return { ...updatedRecord, ...updatedData };
+      } else {
+        // Create a new record if not found
+        const newRecord = await AppwriteService.createDailyRecord(dailyRecordData);
+        return { ...newRecord, ...dailyRecordData };
+      }
+    } catch (error) {
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -53,44 +86,62 @@ const dailyRecordsSlice = createSlice({
   },
   reducers: {
     updateDailyRecordSpending: (state, { payload }) => {
-      const { date, spending, user_id } = payload; // Destructure payload to get date, spending, and user_id
-    
-      const recordIndex = state.records.findIndex(
-        (record) => record.date === date && record.user_id === user_id // Find index using both date and user_id
+      const { date, spending, user_id } = payload;
+
+      const record = state.records.find(
+        (record) => record.date === date && record.user_id === user_id
       );
-    
-      if (recordIndex !== -1) { // Check if a record for that date and user_id exists
-        state.records[recordIndex].total_spending += spending; // Update the total_spending for that record
-        state.records[recordIndex].net_income = // Recalculate net_income based on updated spending
-          state.records[recordIndex].total_income - state.records[recordIndex].total_spending; 
+
+      if (record) {
+        record.total_spending += spending;
+        record.net_income = record.total_income - record.total_spending;
       }
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchDailyRecord.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchDailyRecord.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.records = action.payload; // Save the fetched records
+      })
+      .addCase(fetchDailyRecord.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || "Failed to fetch daily records";
+      })
       .addCase(createOrUpdateDailyRecord.pending, (state) => {
         state.status = "loading";
       })
       .addCase(createOrUpdateDailyRecord.fulfilled, (state, action) => {
         state.status = "succeeded";
 
-        const { updatedData } = action.payload; // Get updated data directly
+        const updatedRecord = action.payload;
         const recordIndex = state.records.findIndex(
-          (record) => record.id === action.payload.$id
+          (record) => record.date === updatedRecord.date && record.user_id === updatedRecord.user_id
         );
 
         if (recordIndex !== -1) {
-          state.records[recordIndex] = { ...state.records[recordIndex], ...updatedData };
+          state.records[recordIndex] = {
+            ...state.records[recordIndex],
+            ...updatedRecord,
+          };
         } else {
-          state.records.push(updatedData);
+          state.records.push(updatedRecord);
         }
       })
       .addCase(createOrUpdateDailyRecord.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.error.message;
+        state.error = action.payload || "Could not update daily record";
       });
   },
 });
+
+// Selectors
+export const getAllRecords = (state) => state.dailyRecords.records;
+export const getRecordsStatus = (state) => state.dailyRecords.status;
+export const getRecordsError = (state) => state.dailyRecords.error;
 
 // Export actions and reducer
 export const { updateDailyRecordSpending } = dailyRecordsSlice.actions;

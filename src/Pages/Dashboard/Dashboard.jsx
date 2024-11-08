@@ -1,5 +1,5 @@
 import Heading from "@/components/ui/Heading";
-import React from "react";
+import React, { useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import { TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,28 @@ import LineChart from "@/components/LineChart/LineCharts";
 import BreakDown from "@/components/ExpBreakDown/BreakDown";
 import AddRecordDialog from "@/components/AddRecordDialog/AddRecordDialog";
 import AddSpendingRecordDialog from "@/components/AddSpendingRecordDialog/AddSpendingRecordDialog";
+import { useDispatch, useSelector } from "react-redux";
+import { selectTodayTotalSpending } from "@/selectors/financialCalculations";
+import {
+  fetchAllSpendingRecords,
+  getRecordsStatus,
+  getRecordsError,
+} from "@/features/spendingRecordsSlice";
+import { getAllRecords } from "@/features/dailyRecordsSlice";
 
 function Dashboard() {
+  const dispatch = useDispatch();
+  const status = useSelector(getRecordsStatus);
+  const data = useSelector(getAllRecords);
+  console.log(data);
+  
+  const totalExpense = useSelector(selectTodayTotalSpending);
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchAllSpendingRecords());
+    }
+  }, [status, dispatch]);
+
   const today = new Date();
   const formattedDate = today.toLocaleDateString("en-US", {
     year: "numeric",
@@ -34,7 +54,7 @@ function Dashboard() {
           <h5 className="mb-2 text-lg tracking-tight text-gray-900 dark:text-white">
             Today's Expense
           </h5>
-          <p className="text-2xl font-semibold">$700</p>
+          <p className="text-2xl font-semibold">${totalExpense}</p>
         </div>
         <div className="sm:p-6 p-4 sm:m-0 mb-3 h-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
           <h5 className="mb-2 text-lg tracking-tight text-gray-900 dark:text-white">
@@ -45,7 +65,7 @@ function Dashboard() {
         <div className="sm:p-6 p-4 sm:m-0 mb-3 h-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
           <div className="flex gap-2">
             <Button>
-            <AddRecordDialog date={formattedDate} />
+              <AddRecordDialog date={formattedDate} />
             </Button>
             <Button>
               <AddSpendingRecordDialog date={formattedDate} />
