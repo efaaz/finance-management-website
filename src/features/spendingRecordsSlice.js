@@ -1,29 +1,19 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, nanoid } from "@reduxjs/toolkit";
 import AppwriteService from "@/appwrite/config";
 import authService from "@/appwrite/auth";
 import { updateDailyRecordSpending } from "@/features/dailyRecordsSlice";
 
+
 // Thunk to fetch all spending records
 const fetchAllSpendingRecords = createAsyncThunk(
   "spendingRecords/fetchAll",
-  async (_, { dispatch }) => {
+  async () => {
     const user = await authService.getCurrentUser();
     const userEmail = user?.email;
 
     if (!userEmail) throw new Error("User not authenticated");
 
     const records = await AppwriteService.getAllSpendingRecords(userEmail);
-
-    // Calculate total spending by date and dispatch for each date
-    const spendingByDate = records.reduce((acc, record) => {
-      acc[record.date] = (acc[record.date] || 0) + record.amount;
-      return acc;
-    }, {});
-
-    // Update daily record spending for each date
-    Object.entries(spendingByDate).forEach(([date, spending]) => {
-      dispatch(updateDailyRecordSpending({ date, spending }));
-    });
 
     return records;
   }
@@ -32,13 +22,13 @@ const fetchAllSpendingRecords = createAsyncThunk(
 // Thunk to create a spending record
 const createSpendingRecord = createAsyncThunk(
   "spendingRecords/createSpendingRecord",
-  async ({ category, amount, date }, { getState, dispatch }) => {
+  async ({ category, amount, date }) => {
     const user = await authService.getCurrentUser();
     const userEmail = user?.email;
-
     if (!userEmail) throw new Error("User not authenticated");
 
     const spendingRecordData = {
+      id: nanoid(),
       user_id: userEmail,
       date,
       category,
@@ -50,23 +40,7 @@ const createSpendingRecord = createAsyncThunk(
       spendingRecordData
     );
 
-    // Get the current records state to calculate the new total
-    const records = [...getState().spendingRecords.records, newRecord];
-    const totalSpending = records
-      .filter((record) => record.date === date)
-      .reduce((total, record) => total + record.amount, 0);
-    console.log(totalSpending);
-
-    // Update daily record spending for the specific date
-    dispatch(
-      updateDailyRecordSpending({
-        date,
-        spending: totalSpending,
-        user_id: userEmail,
-      })
-    );
-
-    return newRecord;
+    return newRecord; // Return the new record created
   }
 );
 
@@ -85,25 +59,36 @@ const spendingRecordsSlice = createSlice({
       })
       .addCase(fetchAllSpendingRecords.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.records = action.payload;
+        state.records = action.payload; // Set records to the fetched data
       })
       .addCase(fetchAllSpendingRecords.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message; // Set error message
       })
       .addCase(createSpendingRecord.pending, (state) => {
         state.status = "loading";
       })
       .addCase(createSpendingRecord.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.records.push(action.payload);
+        state.records.push(action.payload); // Add the new spending record to state
       })
       .addCase(createSpendingRecord.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message; // Set error message
       });
   },
 });
+
+
+export const getAllRecords = (state) => state.spendingRecords.records;
+export const getRecordsStatus = (state) => state.spendingRecords.status;
+export const getRecordsError = (state) => state.spendingRecords.error;
+
+
+
+
+// export const selectPostById = (state, postId) =>
+//     state.posts.posts.find(post => post.id === postId);
 
 // Export the thunks and reducer
 export { fetchAllSpendingRecords, createSpendingRecord };
